@@ -185,9 +185,14 @@ function recordVote(index, value) {
 /* ---------- Modales Fenster für neue Anliegen ---------- */
 function openAddConcernModal() {
     const modal = document.getElementById('addConcernModal');
+    const textarea = document.getElementById('concernText');
     if (modal) {
         modal.classList.add('active');
-        document.getElementById('concernText')?.focus();
+        if (textarea) {
+            textarea.value = '';                // vorherigen Text leeren
+            textarea.focus();
+        }
+        document.getElementById('charCount').textContent = '0';
     }
 }
 
@@ -195,23 +200,33 @@ function closeAddConcernModal() {
     const modal = document.getElementById('addConcernModal');
     if (modal) {
         modal.classList.remove('active');
-        document.getElementById('concernText').value = '';
-        document.getElementById('charCount').textContent = '0';
     }
+    // Auch das Textfeld leeren, falls es existiert (sicherer)
+    const textarea = document.getElementById('concernText');
+    if (textarea) textarea.value = '';
+    const counter = document.getElementById('charCount');
+    if (counter) counter.textContent = '0';
 }
 
 function submitConcern() {
-    const text = document.getElementById('concernText')?.value.trim();
-    if (!text || text.length < 5) {
+    const textarea = document.getElementById('concernText');
+    if (!textarea) return;
+
+    const text = textarea.value.trim();
+    if (text.length < 5) {
         alert('⚠️ Bitte mindestens 5 Zeichen eingeben!');
         return;
     }
 
+    // Neues Anliegen oben einfügen
     concerns.unshift(text);
     localStorage.setItem('concerns', JSON.stringify(concerns));
 
+    // Zur ersten Notiz springen und Anzeige aktualisieren
     currentConcernIndex = 0;
     renderSticky();
+
+    // Modal schließen
     closeAddConcernModal();
 }
 
