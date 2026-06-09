@@ -222,6 +222,7 @@ body {
 
 .progress {
   position: absolute;
+   left: 50%;
   top: 20px;
   right: 20px;
   background: white;
