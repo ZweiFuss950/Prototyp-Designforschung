@@ -50,16 +50,17 @@ const userVotes = JSON.parse(localStorage.getItem('userVotes')) || {
 /* ---------- Concerns (Wischbare Notizen) ---------- */
 function renderSticky() {
     const container = document.getElementById('stickyNoteContainer');
+    if (!container) return;
     container.innerHTML = '';
 
     if (currentConcernIndex < concerns.length) {
         const note = document.createElement('div');
         note.className = 'sticky-note';
-        note.textContent = concerns[currentConcernIndex];
         note.id = 'currentSticky';
 
-        // Vote-Indikator-Elemente einfügen
-        note.innerHTML += `
+        // Text und Indikatoren getrennt setzen, nicht mit innerHTML überschreiben
+        note.innerHTML = `
+            <span class="note-text">${concerns[currentConcernIndex]}</span>
             <div class="vote-indicator">
                 <div class="indicator-left">✕</div>
                 <div class="indicator-right">✓</div>
@@ -67,7 +68,7 @@ function renderSticky() {
         `;
 
         note.addEventListener('mousedown', startDrag);
-        note.addEventListener('touchstart', startDrag);
+        note.addEventListener('touchstart', startDrag, { passive: true });
 
         container.appendChild(note);
     } else {
@@ -91,7 +92,6 @@ function startDrag(e) {
     const note = document.getElementById('currentSticky');
     if (note) {
         note.classList.add('dragging');
-        // Entferne vorherige Swipe-Klassen
         note.classList.remove('swiping-left', 'swiping-right');
     }
 }
@@ -106,9 +106,8 @@ function moveDrag(e) {
     const diff = currentX - startX;
     note.style.transform = `translateX(${diff}px) rotate(${diff * 0.15}deg) scale(${1 - Math.abs(diff) * 0.0005})`;
 
-    // Swipe-Indikator: Klassen setzen und Deckkraft der Symbole anpassen
-    const threshold = 60; // Pixel, ab denen der Indikator erscheint
-    const maxDistance = 150; // maximale Deckkraft bei dieser Distanz
+    const threshold = 60;
+    const maxDistance = 150;
     const absDiff = Math.abs(diff);
 
     if (diff > threshold) {
@@ -121,7 +120,6 @@ function moveDrag(e) {
         note.classList.remove('swiping-left', 'swiping-right');
     }
 
-    // Deckkraft der Indikator-Elemente dynamisch anpassen
     const leftIndicator = note.querySelector('.indicator-left');
     const rightIndicator = note.querySelector('.indicator-right');
     if (leftIndicator && rightIndicator) {
@@ -157,7 +155,6 @@ function endDrag() {
             recordVote(currentConcernIndex, 'not-relevant');
         }
 
-        // Indikatoren ausblenden
         note.querySelector('.indicator-left')?.style?.removeProperty('opacity');
         note.querySelector('.indicator-right')?.style?.removeProperty('opacity');
         note.classList.remove('swiping-left', 'swiping-right', 'dragging');
@@ -167,7 +164,6 @@ function endDrag() {
             renderSticky();
         }, 400);
     } else {
-        // Zurücksetzen
         note.style.transform = 'translateX(0) rotate(0deg) scale(1)';
         note.classList.remove('dragging', 'swiping-left', 'swiping-right');
         note.querySelector('.indicator-left')?.style?.removeProperty('opacity');
@@ -186,24 +182,24 @@ function recordVote(index, value) {
 function openAddConcernModal() {
     const modal = document.getElementById('addConcernModal');
     const textarea = document.getElementById('concernText');
-    if (modal) {
-        modal.classList.add('active');
-        if (textarea) {
-            textarea.value = '';                // vorherigen Text leeren
-            textarea.focus();
-        }
-        document.getElementById('charCount').textContent = '0';
+    if (!modal) return;
+
+    modal.classList.add('active');
+    if (textarea) {
+        textarea.value = '';
+        textarea.focus();
     }
+    const counter = document.getElementById('charCount');
+    if (counter) counter.textContent = '0';
 }
 
 function closeAddConcernModal() {
     const modal = document.getElementById('addConcernModal');
-    if (modal) {
-        modal.classList.remove('active');
-    }
-    // Auch das Textfeld leeren, falls es existiert (sicherer)
+    if (modal) modal.classList.remove('active');
+
     const textarea = document.getElementById('concernText');
     if (textarea) textarea.value = '';
+
     const counter = document.getElementById('charCount');
     if (counter) counter.textContent = '0';
 }
@@ -218,16 +214,16 @@ function submitConcern() {
         return;
     }
 
-    // Neues Anliegen oben einfügen
-    concerns.unshift(text);
-    localStorage.setItem('concerns', JSON.stringify(concerns));
-
-    // Zur ersten Notiz springen und Anzeige aktualisieren
-    currentConcernIndex = 0;
-    renderSticky();
-
-    // Modal schließen
-    closeAddConcernModal();
+    try {
+        concerns.unshift(text);
+        localStorage.setItem('concerns', JSON.stringify(concerns));
+        currentConcernIndex = 0;
+        renderSticky();
+    } catch (error) {
+        console.error('Fehler beim Speichern:', error);
+    } finally {
+        closeAddConcernModal();
+    }
 }
 
 /* ---------- Top Voices (Up‑/Downvotes) ---------- */
