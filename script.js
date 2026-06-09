@@ -237,3 +237,74 @@
 
         // Initialize
         renderTopVoices();
+
+
+        const userVotes = JSON.parse(localStorage.getItem('userVotes')) || {
+            satisfaction: null,
+            energy: null,
+            workload: null
+        };
+
+        // Restore previous selections
+        function restoreSelections() {
+            for (const [key, value] of Object.entries(userVotes)) {
+                if (value) {
+                    const smiley = document.querySelector(`[onclick*="'${key}'"][onclick*="'${value}'"]`);
+                    if (smiley) {
+                        smiley.classList.add('selected');
+                    }
+                }
+            }
+        }
+
+        function selectSmiley(category, value, element) {
+            // Remove previous selection
+            const parent = element.parentElement;
+            parent.querySelectorAll('.smiley').forEach(s => s.classList.remove('selected'));
+            
+            // Add new selection
+            element.classList.add('selected');
+            
+            // Store in memory
+            userVotes[category] = value;
+            
+            // Visual feedback
+            element.style.transform = 'scale(1.25)';
+            setTimeout(() => {
+                if (element.classList.contains('selected')) {
+                    element.style.transform = 'scale(1.2)';
+                }
+            }, 100);
+        }
+
+        function submitVotes(e) {
+            e.preventDefault();
+
+            // Check if all selected
+            if (!userVotes.satisfaction || !userVotes.energy || !userVotes.workload) {
+                alert('⚠️ Bitte alle 3 Kategorien bewerten!');
+                return;
+            }
+
+            // Save to localStorage
+            localStorage.setItem('userVotes', JSON.stringify(userVotes));
+            
+            // Add to history
+            const history = JSON.parse(localStorage.getItem('votingHistory')) || [];
+            history.push({
+                date: new Date().toLocaleDateString('de-DE'),
+                votes: {...userVotes}
+            });
+            localStorage.setItem('votingHistory', JSON.stringify(history));
+
+            // Show feedback
+            const feedback = document.getElementById('feedback');
+            feedback.classList.add('active');
+
+            setTimeout(() => {
+                feedback.classList.remove('active');
+            }, 4000);
+        }
+
+        // Initialize
+        restoreSelections();
