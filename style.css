@@ -223,8 +223,7 @@ body {
 .progress {
   position: absolute;
   top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
+  right: 20px;
   background: white;
   padding: 8px 16px;
   border-radius: 20px;
@@ -232,7 +231,6 @@ body {
   font-weight: 600;
   color: #667eea;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  white-space: nowrap;          /* verhindert Zeilenumbruch */
 }
 
 /* ============================================================
