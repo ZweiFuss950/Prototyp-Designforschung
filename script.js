@@ -58,6 +58,14 @@ function renderSticky() {
         note.textContent = concerns[currentConcernIndex];
         note.id = 'currentSticky';
 
+        // Vote-Indikator-Elemente einfügen
+        note.innerHTML += `
+            <div class="vote-indicator">
+                <div class="indicator-left">✕</div>
+                <div class="indicator-right">✓</div>
+            </div>
+        `;
+
         note.addEventListener('mousedown', startDrag);
         note.addEventListener('touchstart', startDrag);
 
@@ -81,16 +89,52 @@ function startDrag(e) {
     startX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
     currentX = startX;
     const note = document.getElementById('currentSticky');
-    if (note) note.classList.add('dragging');
+    if (note) {
+        note.classList.add('dragging');
+        // Entferne vorherige Swipe-Klassen
+        note.classList.remove('swiping-left', 'swiping-right');
+    }
 }
 
 function moveDrag(e) {
     if (!isDragging) return;
     currentX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
     const note = document.getElementById('currentSticky');
-    if (note) {
-        const diff = currentX - startX;
-        note.style.transform = `translateX(${diff}px) rotate(${diff * 0.15}deg) scale(${1 - Math.abs(diff) * 0.0005})`;
+    if (!note) return;
+
+    const diff = currentX - startX;
+    note.style.transform = `translateX(${diff}px) rotate(${diff * 0.15}deg) scale(${1 - Math.abs(diff) * 0.0005})`;
+
+    // Swipe-Indikator: Klassen setzen und Deckkraft der Symbole anpassen
+    const threshold = 60; // Pixel, ab denen der Indikator erscheint
+    const maxDistance = 150; // maximale Deckkraft bei dieser Distanz
+    const absDiff = Math.abs(diff);
+
+    if (diff > threshold) {
+        note.classList.add('swiping-right');
+        note.classList.remove('swiping-left');
+    } else if (diff < -threshold) {
+        note.classList.add('swiping-left');
+        note.classList.remove('swiping-right');
+    } else {
+        note.classList.remove('swiping-left', 'swiping-right');
+    }
+
+    // Deckkraft der Indikator-Elemente dynamisch anpassen
+    const leftIndicator = note.querySelector('.indicator-left');
+    const rightIndicator = note.querySelector('.indicator-right');
+    if (leftIndicator && rightIndicator) {
+        const opacity = Math.min(absDiff / maxDistance, 1);
+        if (diff > threshold) {
+            rightIndicator.style.opacity = opacity;
+            leftIndicator.style.opacity = 0;
+        } else if (diff < -threshold) {
+            leftIndicator.style.opacity = opacity;
+            rightIndicator.style.opacity = 0;
+        } else {
+            leftIndicator.style.opacity = 0;
+            rightIndicator.style.opacity = 0;
+        }
     }
 }
 
@@ -99,26 +143,34 @@ function endDrag() {
     isDragging = false;
 
     const note = document.getElementById('currentSticky');
+    if (!note) return;
+
     const diff = currentX - startX;
 
-    if (note) {
-        if (Math.abs(diff) > 100) {
-            if (diff > 0) {
-                note.classList.add('swiped-right');
-                recordVote(currentConcernIndex, 'relevant');
-            } else {
-                note.classList.add('swiped-left');
-                recordVote(currentConcernIndex, 'not-relevant');
-            }
-
-            setTimeout(() => {
-                currentConcernIndex++;
-                renderSticky();
-            }, 400);
+    if (Math.abs(diff) > 100) {
+        if (diff > 0) {
+            note.classList.add('swiped-right');
+            recordVote(currentConcernIndex, 'relevant');
         } else {
-            note.style.transform = 'translateX(0) rotate(0deg) scale(1)';
-            note.classList.remove('dragging');
+            note.classList.add('swiped-left');
+            recordVote(currentConcernIndex, 'not-relevant');
         }
+
+        // Indikatoren ausblenden
+        note.querySelector('.indicator-left')?.style?.removeProperty('opacity');
+        note.querySelector('.indicator-right')?.style?.removeProperty('opacity');
+        note.classList.remove('swiping-left', 'swiping-right', 'dragging');
+
+        setTimeout(() => {
+            currentConcernIndex++;
+            renderSticky();
+        }, 400);
+    } else {
+        // Zurücksetzen
+        note.style.transform = 'translateX(0) rotate(0deg) scale(1)';
+        note.classList.remove('dragging', 'swiping-left', 'swiping-right');
+        note.querySelector('.indicator-left')?.style?.removeProperty('opacity');
+        note.querySelector('.indicator-right')?.style?.removeProperty('opacity');
     }
 }
 
@@ -131,19 +183,25 @@ function recordVote(index, value) {
 
 /* ---------- Modales Fenster für neue Anliegen ---------- */
 function openAddConcernModal() {
-    document.getElementById('addConcernModal').classList.add('active');
-    document.getElementById('concernText').focus();
+    const modal = document.getElementById('addConcernModal');
+    if (modal) {
+        modal.classList.add('active');
+        document.getElementById('concernText')?.focus();
+    }
 }
 
 function closeAddConcernModal() {
-    document.getElementById('addConcernModal').classList.remove('active');
-    document.getElementById('concernText').value = '';
-    document.getElementById('charCount').textContent = '0';
+    const modal = document.getElementById('addConcernModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.getElementById('concernText').value = '';
+        document.getElementById('charCount').textContent = '0';
+    }
 }
 
 function submitConcern() {
-    const text = document.getElementById('concernText').value.trim();
-    if (text.length < 5) {
+    const text = document.getElementById('concernText')?.value.trim();
+    if (!text || text.length < 5) {
         alert('⚠️ Bitte mindestens 5 Zeichen eingeben!');
         return;
     }
@@ -159,6 +217,8 @@ function submitConcern() {
 /* ---------- Top Voices (Up‑/Downvotes) ---------- */
 function renderTopVoices() {
     const container = document.getElementById('topVoicesContainer');
+    if (!container) return;
+
     const sorted = [...topVoices].sort((a, b) => b.votes - a.votes);
 
     container.innerHTML = sorted.map(voice => {
@@ -229,9 +289,13 @@ function switchView(view, event) {
     document.querySelectorAll('.view-button').forEach(btn => btn.classList.remove('active'));
     if (event) event.target.classList.add('active');
 
-    document.getElementById('currentView').style.display = (view === 'current') ? 'grid' : 'none';
-    document.getElementById('statsSection').style.display = (view === 'stats') ? 'block' : 'none';
-    document.getElementById('badgesSection').style.display = (view === 'week') ? 'block' : 'none';
+    const currentView = document.getElementById('currentView');
+    const statsSection = document.getElementById('statsSection');
+    const badgesSection = document.getElementById('badgesSection');
+
+    if (currentView) currentView.style.display = (view === 'current') ? 'grid' : 'none';
+    if (statsSection) statsSection.style.display = (view === 'stats') ? 'block' : 'none';
+    if (badgesSection) badgesSection.style.display = (view === 'week') ? 'block' : 'none';
 }
 
 /* ---------- Stimmungs‑Smileys ---------- */
@@ -276,8 +340,10 @@ function submitVotes(e) {
     localStorage.setItem('votingHistory', JSON.stringify(history));
 
     const feedback = document.getElementById('feedback');
-    feedback.classList.add('active');
-    setTimeout(() => feedback.classList.remove('active'), 4000);
+    if (feedback) {
+        feedback.classList.add('active');
+        setTimeout(() => feedback.classList.remove('active'), 4000);
+    }
 }
 
 
@@ -289,13 +355,17 @@ document.addEventListener('mouseup', endDrag);
 document.addEventListener('touchmove', moveDrag, { passive: true });
 document.addEventListener('touchend', endDrag);
 
-document.getElementById('concernText').addEventListener('input', function () {
-    document.getElementById('charCount').textContent = this.value.length;
-});
+const concernTextArea = document.getElementById('concernText');
+if (concernTextArea) {
+    concernTextArea.addEventListener('input', function () {
+        const charCountEl = document.getElementById('charCount');
+        if (charCountEl) charCountEl.textContent = this.value.length;
+    });
+}
 
 window.addEventListener('click', function (event) {
     const modal = document.getElementById('addConcernModal');
-    if (event.target === modal) closeAddConcernModal();
+    if (modal && event.target === modal) closeAddConcernModal();
 });
 
 
@@ -310,7 +380,7 @@ document.querySelectorAll('.nav-item').forEach(item => {
   });
 });
 
-// 2. FAB – Ripple-Effekt
+// 2. FAB – Ripple-Effekt (nur auf concerns.html vorhanden)
 const fab = document.getElementById('fabButton');
 if (fab) {
   fab.addEventListener('click', function(e) {
