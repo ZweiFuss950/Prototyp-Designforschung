@@ -16,7 +16,7 @@ body {
   display: flex;
   flex-direction: column;
   color: #2c3e50;
-  padding-bottom: 90px; /* Platz für den fixierten Footer */
+  padding-bottom: 85px; /* Platz für die Bottom-Nav */
 }
 
 /* Scrollbar (globale Stilisierung) */
@@ -43,6 +43,12 @@ body {
   padding: 16px 24px;
   text-align: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
 }
 
 .header-title {
@@ -182,32 +188,36 @@ body {
   font-size: 32px;
 }
 
-.add-button {
-  position: absolute;
-  bottom: 20px;
-  width: 70px;
-  height: 70px;
+/* ============================================================
+   FLOATING ACTION BUTTON (FAB)
+   ============================================================ */
+.fab {
+  position: fixed;
+  bottom: 95px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border: none;
   color: white;
-  font-size: 36px;
+  font-size: 24px;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
-  transition: all 0.3s ease;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;
+  z-index: 999;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1.2);
 }
 
-.add-button:hover {
+.fab:hover {
   transform: scale(1.1);
-  box-shadow: 0 6px 24px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 12px 28px rgba(102, 126, 234, 0.5);
 }
 
-.add-button:active {
-  transform: scale(0.95);
+.fab:active {
+  transform: scale(0.9);
 }
 
 .progress {
@@ -250,9 +260,12 @@ body {
 }
 
 .modal-content {
-  background: white;
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(108, 92, 231, 0.15);
   padding: 32px;
-  border-radius: 16px;
+  border-radius: 20px;
   max-width: 450px;
   width: 90%;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
@@ -339,54 +352,63 @@ body {
 }
 
 /* ============================================================
-   FOOTER (für alle Ansichten identisch)
+   FOOTER (wird nicht mehr verwendet, bleibt aber für Kompatibilität)
    ============================================================ */
 .footer {
-  background: white;
-  border-top: 2px solid #e9ecef;
-  padding: 12px 20px;
-  display: flex;
-  justify-content: center;
-  gap: 0;
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
+  display: none; /* ausgeblendet, da wir die Bottom-Nav nutzen */
+}
+
+/* ============================================================
+   BOTTOM NAVIGATION – DAS HERZSTÜCK DER APP
+   ============================================================ */
+.bottom-nav {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 76px;
-  z-index: 999;
-}
-
-.footer-button {
-  flex: 1;
-  max-width: 150px;
-  padding: 12px;
-  border: 2px solid #e9ecef;
-  background: white;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 13px;
-  transition: all 0.3s ease;
-  text-decoration: none;
+  height: 75px;
+  background: rgba(255,255,255,0.75);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border-top: 1px solid rgba(108, 92, 231, 0.15);
   display: flex;
+  justify-content: space-around;
   align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  margin: 0 4px;
-  color: #2c3e50;
-  text-align: center;
+  padding: 0 16px;
+  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 1000;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.04);
 }
 
-.footer-button:hover {
-  border-color: #667eea;
-  background: #f0f4ff;
-  color: #667eea;
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #636E72;
+  font-size: 10px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+  padding: 8px 12px;
+  border-radius: 16px;
 }
 
-.footer-button.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border-color: transparent;
+.nav-item svg {
+  transition: all 0.2s;
+  stroke: #636E72;
+}
+
+.nav-item.active {
+  color: #6C5CE7;
+}
+
+.nav-item.active svg {
+  stroke: #6C5CE7;
+  transform: scale(1.1);
 }
 
 /* ============================================================
@@ -396,7 +418,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  text-align: left; /* Überschreibt text-align: center der Basis */
+  text-align: left;
 }
 
 .view-selector {
@@ -429,28 +451,37 @@ body {
 }
 
 /* ============================================================
-   LAYOUT: GRID-ANSICHT (Admin / Dashboard)
+   LAYOUT: GRID-ANSICHT (Admin / Dashboard) – MIT GLASSMORPHISM
    ============================================================ */
 .container.grid-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
-  align-items: stretch; /* überschreibt das align-items: center der Basis */
+  align-items: stretch;
   justify-content: stretch;
   padding: 24px;
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
-  position: static; /* kein position: relative nötig */
+  position: static;
 }
 
 .panel {
-  background: white;
-  border-radius: 12px;
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(108, 92, 231, 0.15);
+  border-radius: 20px;
   padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
   display: flex;
   flex-direction: column;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1.2);
+}
+
+.panel:hover {
+  box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+  transform: translateY(-4px);
 }
 
 .panel-title {
@@ -461,6 +492,14 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.panel-title::before {
+  content: '';
+  width: 4px;
+  height: 18px;
+  background: linear-gradient(180deg, #667eea, #764ba2);
+  border-radius: 4px;
 }
 
 /* Top Voices Panel */
@@ -600,17 +639,19 @@ body {
 }
 
 .stat-card {
-  background: white;
-  border: 2px solid #e9ecef;
-  border-radius: 12px;
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(108, 92, 231, 0.15);
+  border-radius: 20px;
   padding: 20px;
   text-align: center;
   transition: all 0.3s ease;
 }
 
 .stat-card:hover {
-  border-color: #667eea;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+  transform: translateY(-4px);
 }
 
 .stat-icon {
@@ -630,16 +671,22 @@ body {
 .stat-value {
   font-size: 28px;
   font-weight: 700;
-  color: #667eea;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 /* Badges Panel */
 .badges-panel {
   grid-column: 1 / -1;
-  background: white;
-  border-radius: 12px;
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(108, 92, 231, 0.15);
+  border-radius: 20px;
   padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
 .badges-title {
@@ -712,10 +759,13 @@ body {
    VOTING-ANSICHT (Smiley-Feedback)
    ============================================================ */
 .voting-panel {
-  background: white;
-  border-radius: 16px;
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(108, 92, 231, 0.15);
+  border-radius: 20px;
   padding: 40px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
   max-width: 500px;
   width: 100%;
 }
@@ -879,6 +929,30 @@ body {
 }
 
 /* ============================================================
+   MIKRO-ANIMATIONEN
+   ============================================================ */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.panel,
+.stat-card,
+.voice-item {
+  animation: fadeInUp 0.5s ease both;
+}
+
+.panel:nth-child(1) { animation-delay: 0.05s; }
+.panel:nth-child(2) { animation-delay: 0.1s; }
+.panel:nth-child(3) { animation-delay: 0.15s; }
+.panel:nth-child(4) { animation-delay: 0.2s; }
+
+/* Ripple-Effekt für FAB */
+@keyframes ripple {
+  to { transform: scale(4); opacity: 0; }
+}
+
+/* ============================================================
    RESPONSIVE ANPASSUNGEN
    ============================================================ */
 
@@ -914,10 +988,11 @@ body {
     padding: 24px 20px;
   }
 
-  .add-button {
-    width: 60px;
-    height: 60px;
-    font-size: 30px;
+  .fab {
+    width: 56px;
+    height: 56px;
+    bottom: 85px;
+    right: 16px;
   }
 
   .progress {
@@ -974,15 +1049,5 @@ body {
 
   .category-label {
     font-size: 14px;
-  }
-
-  /* Footer mobil */
-  .footer {
-    flex-wrap: wrap;
-  }
-
-  .footer-button {
-    max-width: 100%;
-    flex: 0 1 calc(33.333% - 8px);
   }
 }
