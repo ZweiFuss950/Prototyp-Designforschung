@@ -1051,3 +1051,88 @@ body {
     font-size: 14px;
   }
 }
+
+/* ============================================================
+   SWIPE-INDIKATOREN (Tinder-Stil)
+   ============================================================ */
+.sticky-note {
+  position: relative;
+  overflow: hidden; /* damit die Indikatoren nicht überstehen */
+}
+
+/* Indikator-Container (links und rechts) */
+.vote-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.indicator-left,
+.indicator-right {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 64px;
+  font-weight: 900;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(4px);
+}
+
+.indicator-left {
+  left: 20px;
+  color: #e74c3c;
+}
+.indicator-right {
+  right: 20px;
+  color: #27ae60;
+}
+
+/* Stempel-Text (optional) */
+.indicator-left::after,
+.indicator-right::after {
+  position: absolute;
+  bottom: -30px;
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+.indicator-left::after {
+  content: "NOPE";
+}
+.indicator-right::after {
+  content: "LIKE";
+}
+
+/* Sichtbarkeit nach Schwellwert */
+.sticky-note.swiping-left .indicator-left,
+.sticky-note.swiping-right .indicator-right {
+  opacity: 1;
+}
+
+/* Hintergrundfarbe während des Wischens */
+.sticky-note.swiping-left {
+  background: linear-gradient(135deg, rgba(231, 76, 60, 0.25), rgba(192, 57, 43, 0.4));
+}
+.sticky-note.swiping-right {
+  background: linear-gradient(135deg, rgba(39, 174, 96, 0.25), rgba(30, 132, 73, 0.4));
+}
+
+/* Übergang zurücksetzen, wenn nicht gewischt wird */
+.sticky-note:not(.swiping-left):not(.swiping-right) .indicator-left,
+.sticky-note:not(.swiping-left):not(.swiping-right) .indicator-right {
+  opacity: 0;
+}
