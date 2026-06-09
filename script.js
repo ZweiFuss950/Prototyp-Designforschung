@@ -1,0 +1,147 @@
+    <script>
+        const defaultConcerns = [
+            "Kaffeequalität im Büro verbessern",
+            "Mehr Remote-Tage ermöglichen",
+            "Wellness-Kurse anbieten",
+            "Bessere Meeting-Raumausstattung",
+            "Regelmäßigere Team-Events",
+            "Verbesserung der Fahrstuhl-Reinigung",
+            "Gehalt anpassen nach Inflation",
+            "Verbesserung der Klimatisierung"
+        ];
+
+        let concerns = JSON.parse(localStorage.getItem('concerns')) || [...defaultConcerns];
+        let currentConcernIndex = 0;
+        let startX = 0;
+        let currentX = 0;
+        let isDragging = false;
+        let concernVotes = JSON.parse(localStorage.getItem('concernVotes')) || {};
+
+        function renderSticky() {
+            const container = document.getElementById('stickyNoteContainer');
+            container.innerHTML = '';
+
+            if (currentConcernIndex < concerns.length) {
+                const note = document.createElement('div');
+                note.className = 'sticky-note';
+                note.textContent = concerns[currentConcernIndex];
+                note.id = 'currentSticky';
+                
+                note.addEventListener('mousedown', startDrag);
+                note.addEventListener('touchstart', startDrag);
+                
+                container.appendChild(note);
+            } else {
+                const note = document.createElement('div');
+                note.className = 'sticky-note finished';
+                note.innerHTML = '✨ Alle Anliegen angesehen!<br><br>Komm morgen wieder.<br><span style="font-size: 24px; margin-top: 12px;">😊</span>';
+                note.style.cursor = 'default';
+                container.appendChild(note);
+            }
+
+            document.getElementById('currentIndex').textContent = currentConcernIndex + 1;
+            document.getElementById('totalCount').textContent = concerns.length;
+        }
+
+        function startDrag(e) {
+            if (currentConcernIndex >= concerns.length) return;
+            
+            isDragging = true;
+            startX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+            currentX = startX;
+            const note = document.getElementById('currentSticky');
+            if (note) note.classList.add('dragging');
+        }
+
+        function moveDrag(e) {
+            if (!isDragging) return;
+            currentX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+            const note = document.getElementById('currentSticky');
+            if (note) {
+                const diff = currentX - startX;
+                note.style.transform = `translateX(${diff}px) rotate(${diff * 0.15}deg) scale(${1 - Math.abs(diff) * 0.0005})`;
+            }
+        }
+
+        function endDrag() {
+            if (!isDragging) return;
+            isDragging = false;
+            
+            const note = document.getElementById('currentSticky');
+            const diff = currentX - startX;
+            
+            if (note) {
+                if (Math.abs(diff) > 100) {
+                    if (diff > 0) {
+                        note.classList.add('swiped-right');
+                        recordVote(currentConcernIndex, 'relevant');
+                    } else {
+                        note.classList.add('swiped-left');
+                        recordVote(currentConcernIndex, 'not-relevant');
+                    }
+                    
+                    setTimeout(() => {
+                        currentConcernIndex++;
+                        renderSticky();
+                    }, 400);
+                } else {
+                    note.style.transform = 'translateX(0) rotate(0deg) scale(1)';
+                    note.classList.remove('dragging');
+                }
+            }
+        }
+
+        function recordVote(index, value) {
+            if (!concernVotes[index]) {
+                concernVotes[index] = { concern: concerns[index], vote: value };
+                localStorage.setItem('concernVotes', JSON.stringify(concernVotes));
+            }
+        }
+
+        document.addEventListener('mousemove', moveDrag);
+        document.addEventListener('mouseup', endDrag);
+        document.addEventListener('touchmove', moveDrag);
+        document.addEventListener('touchend', endDrag);
+
+        function openAddConcernModal() {
+            document.getElementById('addConcernModal').classList.add('active');
+            document.getElementById('concernText').focus();
+        }
+
+        function closeAddConcernModal() {
+            document.getElementById('addConcernModal').classList.remove('active');
+            document.getElementById('concernText').value = '';
+            document.getElementById('charCount').textContent = '0';
+        }
+
+        function submitConcern() {
+            const text = document.getElementById('concernText').value.trim();
+            if (text.length < 5) {
+                alert('⚠️ Bitte mindestens 5 Zeichen eingeben!');
+                return;
+            }
+
+            concerns.unshift(text);
+            localStorage.setItem('concerns', JSON.stringify(concerns));
+            
+            currentConcernIndex = 0;
+            renderSticky();
+            closeAddConcernModal();
+        }
+
+        // Character count
+        document.getElementById('concernText').addEventListener('input', function() {
+            document.getElementById('charCount').textContent = this.value.length;
+        });
+
+        // Close modal on outside click
+        window.onclick = function(event) {
+            const modal = document.getElementById('addConcernModal');
+            if (event.target === modal) {
+                closeAddConcernModal();
+            }
+        }
+
+        // Initialize
+        renderSticky();
+    </script>
