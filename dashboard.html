@@ -23,51 +23,63 @@
         <div class="panel top-voices">
             <div class="panel-title">🌟 Top Voices</div>
             <div id="topVoicesContainer">
-                <!-- Fallback für den Fall, dass JavaScript deaktiviert ist -->
-                    <div class="voice-item">
-                        <div class="voice-title">Frau Afflerbach will Demokratietag organisieren</div>
-                        <div class="voice-votes">
-                            <span class="vote-count">24</span>
-                        </div>
-                    </div>
-                    <div class="voice-item">
-                        <div class="voice-title">Kaffeequalität im Pausenraum verbessern</div>
-                        <div class="voice-votes">
-                            <span class="vote-count">18</span>
-                        </div>
-                    </div>
-                    <div class="voice-item">
-                        <div class="voice-title">Mehr flexible Arbeitszeiten ermöglichen</div>
-                        <div class="voice-votes">
-                            <span class="vote-count">16</span>
-                        </div>
-                    </div>
-                    <div class="voice-item">
-                        <div class="voice-title">Wellness-Programm für Mitarbeiter starten</div>
-                        <div class="voice-votes">
-                            <span class="vote-count">14</span>
-                        </div>
-                    </div>
-                    <div class="voice-item">
-                        <div class="voice-title">Bessere Klimatisierung in den Büros</div>
-                        <div class="voice-votes">
-                            <span class="vote-count">11</span>
-                        </div>
-                    </div>
-                    <div class="voice-item">
-                        <div class="voice-title">Monthly Team Building Events</div>
-                        <div class="voice-votes">
-                            <span class="vote-count">9</span>
-                        </div>
-                    </div>
-                    <div class="voice-item">
-                        <div class="voice-title">Verbesserung der Fahrstuhl-Reinigung</div>
-                        <div class="voice-votes">
-                            <span class="vote-count">7</span>
-                        </div>
-                    </div>
-              
-            </div>
+    <div class="voice-item">
+        <div class="voice-title">Frau Afflerbach will Demokratietag organisieren</div>
+        <div class="voice-votes">
+            <button class="vote-button" onclick="upVote(1)">👍</button>
+            <span class="vote-count" id="vote-1">24</span>
+            <button class="vote-button" onclick="downVote(1)">👎</button>
+        </div>
+    </div>
+    <div class="voice-item">
+        <div class="voice-title">Kaffeequalität im Pausenraum verbessern</div>
+        <div class="voice-votes">
+            <button class="vote-button" onclick="upVote(2)">👍</button>
+            <span class="vote-count" id="vote-2">18</span>
+            <button class="vote-button" onclick="downVote(2)">👎</button>
+        </div>
+    </div>
+    <div class="voice-item">
+        <div class="voice-title">Mehr flexible Arbeitszeiten ermöglichen</div>
+        <div class="voice-votes">
+            <button class="vote-button" onclick="upVote(3)">👍</button>
+            <span class="vote-count" id="vote-3">16</span>
+            <button class="vote-button" onclick="downVote(3)">👎</button>
+        </div>
+    </div>
+    <div class="voice-item">
+        <div class="voice-title">Wellness-Programm für Mitarbeiter starten</div>
+        <div class="voice-votes">
+            <button class="vote-button" onclick="upVote(4)">👍</button>
+            <span class="vote-count" id="vote-4">14</span>
+            <button class="vote-button" onclick="downVote(4)">👎</button>
+        </div>
+    </div>
+    <div class="voice-item">
+        <div class="voice-title">Bessere Klimatisierung in den Büros</div>
+        <div class="voice-votes">
+            <button class="vote-button" onclick="upVote(5)">👍</button>
+            <span class="vote-count" id="vote-5">11</span>
+            <button class="vote-button" onclick="downVote(5)">👎</button>
+        </div>
+    </div>
+    <div class="voice-item">
+        <div class="voice-title">Monthly Team Building Events</div>
+        <div class="voice-votes">
+            <button class="vote-button" onclick="upVote(6)">👍</button>
+            <span class="vote-count" id="vote-6">9</span>
+            <button class="vote-button" onclick="downVote(6)">👎</button>
+        </div>
+    </div>
+    <div class="voice-item">
+        <div class="voice-title">Verbesserung der Fahrstuhl-Reinigung</div>
+        <div class="voice-votes">
+            <button class="vote-button" onclick="upVote(7)">👍</button>
+            <span class="vote-count" id="vote-7">7</span>
+            <button class="vote-button" onclick="downVote(7)">👎</button>
+        </div>
+    </div>
+</div>
         </div>
 
         <!-- CHART -->
