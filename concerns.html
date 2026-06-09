@@ -87,6 +87,11 @@
         .sticky-note {
             position: absolute;
             width: 340px;
+            height: 180px;                  /* fixe Höhe für exakte Zentrierung */
+            left: 50%;                      /* horizontal zentrieren */
+            margin-left: -170px;            /* halbe Breite */
+            top: 50%;                       /* vertikal zentrieren */
+            margin-top: -90px;              /* halbe Höhe */
             padding: 32px 24px;
             background: linear-gradient(135deg, #ffd89b 0%, #ffed4e 100%);
             border-radius: 8px;
@@ -97,7 +102,6 @@
             line-height: 1.6;
             color: #2c3e50;
             text-align: center;
-            min-height: 180px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -163,8 +167,7 @@
         .add-button {
             position: absolute;
             bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
+            /* kein left – bleibt wie ursprünglich */
             width: 70px;
             height: 70px;
             border-radius: 50%;
@@ -182,12 +185,12 @@
         }
 
         .add-button:hover {
-            transform: translateX(-50%) scale(1.1);
+            transform: scale(1.1);
             box-shadow: 0 6px 24px rgba(102, 126, 234, 0.4);
         }
 
         .add-button:active {
-            transform: translateX(-50%) scale(0.95);
+            transform: scale(0.95);
         }
 
         .progress {
@@ -373,6 +376,9 @@
 
             .sticky-note {
                 width: 280px;
+                height: 160px;
+                margin-left: -140px;
+                margin-top: -80px;
                 font-size: 16px;
                 padding: 24px 20px;
             }
