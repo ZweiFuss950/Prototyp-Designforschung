@@ -1,4 +1,3 @@
-    <script>
         const defaultConcerns = [
             "Kaffeequalität im Büro verbessern",
             "Mehr Remote-Tage ermöglichen",
@@ -144,4 +143,97 @@
 
         // Initialize
         renderSticky();
-    </script>
+
+        const defaultTopVoices = [
+            { id: 1, title: "Frau Afflerbach will Demokratietag organisieren", votes: 24 },
+            { id: 2, title: "Kaffeequalität im Pausenraum verbessern", votes: 18 },
+            { id: 3, title: "Mehr flexible Arbeitszeiten ermöglichen", votes: 16 },
+            { id: 4, title: "Wellness-Programm für Mitarbeiter starten", votes: 14 },
+            { id: 5, title: "Bessere Klimatisierung in den Büros", votes: 11 },
+            { id: 6, title: "Monthly Team Building Events", votes: 9 },
+            { id: 7, title: "Verbesserung der Fahrstuhl-Reinigung", votes: 7 }
+        ];
+
+        let topVoices = JSON.parse(localStorage.getItem('topVoices')) || defaultTopVoices;
+        let userTopVotes = JSON.parse(localStorage.getItem('userTopVotes')) || {};
+
+        function renderTopVoices() {
+            const container = document.getElementById('topVoicesContainer');
+            
+            // Sort by votes descending
+            const sorted = [...topVoices].sort((a, b) => b.votes - a.votes);
+            
+            container.innerHTML = sorted.map(voice => {
+                const upVoted = userTopVotes[voice.id]?.upVoted || false;
+                const downVoted = userTopVotes[voice.id]?.downVoted || false;
+                
+                return `
+                    <div class="voice-item">
+                        <div class="voice-title">${voice.title}</div>
+                        <div class="voice-votes">
+                            <button class="vote-button ${upVoted ? 'up-voted' : ''}" onclick="upVote(${voice.id})">👍</button>
+                            <span class="vote-count" id="vote-${voice.id}">${voice.votes}</span>
+                            <button class="vote-button ${downVoted ? 'down-voted' : ''}" onclick="downVote(${voice.id})">👎</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function upVote(id) {
+            const voice = topVoices.find(v => v.id === id);
+            if (voice) {
+                if (!userTopVotes[id]) userTopVotes[id] = {};
+                
+                if (userTopVotes[id].upVoted) {
+                    voice.votes--;
+                    userTopVotes[id].upVoted = false;
+                } else {
+                    if (userTopVotes[id].downVoted) {
+                        voice.votes++;
+                        userTopVotes[id].downVoted = false;
+                    }
+                    voice.votes++;
+                    userTopVotes[id].upVoted = true;
+                }
+                
+                localStorage.setItem('topVoices', JSON.stringify(topVoices));
+                localStorage.setItem('userTopVotes', JSON.stringify(userTopVotes));
+                renderTopVoices();
+            }
+        }
+
+        function downVote(id) {
+            const voice = topVoices.find(v => v.id === id);
+            if (voice) {
+                if (!userTopVotes[id]) userTopVotes[id] = {};
+                
+                if (userTopVotes[id].downVoted) {
+                    voice.votes++;
+                    userTopVotes[id].downVoted = false;
+                } else {
+                    if (userTopVotes[id].upVoted) {
+                        voice.votes--;
+                        userTopVotes[id].upVoted = false;
+                    }
+                    voice.votes = Math.max(0, voice.votes - 1);
+                    userTopVotes[id].downVoted = true;
+                }
+                
+                localStorage.setItem('topVoices', JSON.stringify(topVoices));
+                localStorage.setItem('userTopVotes', JSON.stringify(userTopVotes));
+                renderTopVoices();
+            }
+        }
+
+        function switchView(view) {
+            document.querySelectorAll('.view-button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            document.getElementById('currentView').style.display = view === 'current' ? 'grid' : 'none';
+            document.getElementById('statsSection').style.display = view === 'stats' ? 'block' : 'none';
+            document.getElementById('badgesSection').style.display = view === 'week' ? 'block' : 'none';
+        }
+
+        // Initialize
+        renderTopVoices();
