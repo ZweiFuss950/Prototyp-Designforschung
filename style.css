@@ -1138,3 +1138,18 @@ body {
 .sticky-note:not(.swiping-left):not(.swiping-right) .indicator-right {
   opacity: 0;
 }
+
+/* ============================================================
+   SWIPE-PAGE: KEIN SCROLLEN (nur für die Wisch-Ansicht)
+   ============================================================ */
+body.swipe-page {
+  overflow: hidden;          /* verhindert vertikales & horizontales Scrollen */
+  position: fixed;           /* verhindert Bounce-Effekte (iOS) */
+  width: 100%;
+  height: 100%;
+}
+
+/* Die Sticky-Note selbst soll keine Browser-Standardgesten auslösen */
+.sticky-note {
+  touch-action: none;        /* unterdrückt Scrollen und Zoomen auf der Karte */
+}
