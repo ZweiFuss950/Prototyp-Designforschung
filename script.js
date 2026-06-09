@@ -97,6 +97,7 @@ function startDrag(e) {
 }
 
 function moveDrag(e) {
+    if (isDragging) e.preventDefault();
     if (!isDragging) return;
     currentX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
     const note = document.getElementById('currentSticky');
@@ -352,7 +353,7 @@ function submitVotes(e) {
  *****************************************************/
 document.addEventListener('mousemove', moveDrag);
 document.addEventListener('mouseup', endDrag);
-document.addEventListener('touchmove', moveDrag, { passive: true });
+document.addEventListener('touchmove', moveDrag, { passive: false });
 document.addEventListener('touchend', endDrag);
 
 const concernTextArea = document.getElementById('concernText');
