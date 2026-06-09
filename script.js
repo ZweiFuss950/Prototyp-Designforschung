@@ -300,6 +300,88 @@ window.addEventListener('click', function (event) {
 
 
 /*****************************************************
+ *  APP-LIKE INTERACTIONS (MODERNE ERWEITERUNGEN)
+ *****************************************************/
+
+// 1. Bottom-Navigation – haptisches Feedback
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    if (navigator.vibrate) navigator.vibrate(10);
+  });
+});
+
+// 2. FAB – Ripple-Effekt
+const fab = document.getElementById('fabButton');
+if (fab) {
+  fab.addEventListener('click', function(e) {
+    const ripple = document.createElement('span');
+    const rect = fab.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    ripple.style.width = ripple.style.height = `${size}px`;
+    ripple.style.left = `${e.clientX - rect.left - size/2}px`;
+    ripple.style.top = `${e.clientY - rect.top - size/2}px`;
+    ripple.style.position = 'absolute';
+    ripple.style.borderRadius = '50%';
+    ripple.style.background = 'rgba(255,255,255,0.6)';
+    ripple.style.transform = 'scale(0)';
+    ripple.style.animation = 'ripple 0.6s ease-out';
+    fab.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 600);
+  });
+}
+
+// 3. Progress-Bars animieren, sobald sie sichtbar sind
+const progressObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('animate');
+    }
+  });
+}, { threshold: 0.3 });
+
+document.querySelectorAll('.progress-fill').forEach(bar => progressObserver.observe(bar));
+
+// 4. Stat-Counter sanft hochzählen (wenn vorhanden)
+function animateCounter(el, target) {
+  let current = 0;
+  const step = target / 40;
+  const timer = setInterval(() => {
+    current += step;
+    if (current >= target) {
+      el.textContent = target;
+      clearInterval(timer);
+    } else {
+      el.textContent = Math.floor(current);
+    }
+  }, 20);
+}
+
+document.querySelectorAll('.stat-value').forEach(stat => {
+  const target = parseInt(stat.textContent);
+  if (target) animateCounter(stat, target);
+});
+
+// 5. Pull-to-Refresh (einfaches Feedback)
+let touchStartY = 0;
+document.addEventListener('touchstart', (e) => {
+  touchStartY = e.touches[0].clientY;
+}, { passive: true });
+
+document.addEventListener('touchmove', (e) => {
+  const touchY = e.touches[0].clientY;
+  if (touchY - touchStartY > 80 && window.scrollY === 0) {
+    document.body.style.setProperty('--refresh-offset', `${Math.min(touchY - touchStartY - 80, 60)}px`);
+  }
+}, { passive: true });
+
+document.addEventListener('touchend', () => {
+  const offset = parseInt(getComputedStyle(document.body).getPropertyValue('--refresh-offset'));
+  if (offset > 40) location.reload();
+  document.body.style.setProperty('--refresh-offset', '0px');
+});
+
+
+/*****************************************************
  *  INITIALISIERUNG
  *****************************************************/
 renderSticky();
