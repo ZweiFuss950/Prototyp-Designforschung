@@ -131,6 +131,8 @@ body {
   justify-content: center;
   transition: transform 0.1s ease;
   transform-origin: center;
+  overflow: hidden;            /* für Swipe-Indikatoren */
+  touch-action: none;          /* unterdrückt Browser-Scrollen/Zoomen */
 }
 
 .sticky-note:active {
@@ -166,26 +168,83 @@ body {
   100% { transform: translateX(600px) rotate(25deg) scale(0.8); opacity: 0; }
 }
 
+/* ============================================================
+   SWIPE-INDIKATOREN (Tinder-Stil)
+   ============================================================ */
 .vote-indicator {
   position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.2s ease;
+  z-index: 5;
 }
 
-.sticky-note.dragging .vote-indicator {
-  opacity: 0.3;
+.indicator-left,
+.indicator-right {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 64px;
+  font-weight: 900;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(4px);
 }
 
-.vote-indicator-left,
-.vote-indicator-right {
-  font-size: 32px;
+.indicator-left {
+  left: 20px;
+  color: #e74c3c;
+}
+.indicator-right {
+  right: 20px;
+  color: #27ae60;
+}
+
+.indicator-left::after,
+.indicator-right::after {
+  position: absolute;
+  bottom: -30px;
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+.indicator-left::after {
+  content: "NOPE";
+}
+.indicator-right::after {
+  content: "LIKE";
+}
+
+.sticky-note.swiping-left .indicator-left,
+.sticky-note.swiping-right .indicator-right {
+  opacity: 1;
+}
+
+/* Hintergrundfarbe während des Wischens */
+.sticky-note.swiping-left {
+  background: linear-gradient(135deg, rgba(231, 76, 60, 0.25), rgba(192, 57, 43, 0.4));
+}
+.sticky-note.swiping-right {
+  background: linear-gradient(135deg, rgba(39, 174, 96, 0.25), rgba(30, 132, 73, 0.4));
+}
+
+/* Übergang zurücksetzen, wenn nicht gewischt wird */
+.sticky-note:not(.swiping-left):not(.swiping-right) .indicator-left,
+.sticky-note:not(.swiping-left):not(.swiping-right) .indicator-right {
+  opacity: 0;
 }
 
 /* ============================================================
@@ -220,10 +279,12 @@ body {
   transform: scale(0.9);
 }
 
+/* Fortschritts-Indikator (zentriert) */
 .progress {
   position: absolute;
   top: 20px;
-  right: 20px;
+  left: 50%;
+  transform: translateX(-50%);
   background: white;
   padding: 8px 16px;
   border-radius: 20px;
@@ -231,6 +292,7 @@ body {
   font-weight: 600;
   color: #667eea;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
 }
 
 /* ============================================================
@@ -352,10 +414,10 @@ body {
 }
 
 /* ============================================================
-   FOOTER (wird nicht mehr verwendet, bleibt aber für Kompatibilität)
+   FOOTER (ausgeblendet – wir nutzen Bottom-Nav)
    ============================================================ */
 .footer {
-  display: none; /* ausgeblendet, da wir die Bottom-Nav nutzen */
+  display: none;
 }
 
 /* ============================================================
@@ -412,7 +474,7 @@ body {
 }
 
 /* ============================================================
-   HEADER – FLEX-VARIANTE (für die Admin-/Grid-Ansicht)
+   HEADER – FLEX-VARIANTE (für die Dashboard-Ansicht)
    ============================================================ */
 .header.flex-header {
   display: flex;
@@ -451,7 +513,7 @@ body {
 }
 
 /* ============================================================
-   LAYOUT: GRID-ANSICHT (Admin / Dashboard) – MIT GLASSMORPHISM
+   LAYOUT: GRID-ANSICHT (Dashboard) – MIT GLASSMORPHISM
    ============================================================ */
 .container.grid-container {
   display: grid;
@@ -580,6 +642,7 @@ body {
   grid-column: 2;
   display: flex;
   flex-direction: column;
+  min-height: 480px;
 }
 
 .chart-container {
@@ -588,17 +651,20 @@ body {
   align-items: center;
   justify-content: center;
   flex: 1;
+  padding: 10px 0;
+  overflow: visible;
 }
 
 .pie-chart {
-  width: 200px;
-  height: 200px;
-  margin: 20px 0;
+  width: 220px;
+  height: 220px;
+  margin: 10px 0 20px 0;
+  flex-shrink: 0;
 }
 
 .chart-legend {
   width: 100%;
-  margin-top: 24px;
+  margin-top: 10px;
 }
 
 .legend-item {
@@ -953,6 +1019,16 @@ body {
 }
 
 /* ============================================================
+   SWIPE-PAGE: KEIN SCROLLEN
+   ============================================================ */
+body.swipe-page {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+}
+
+/* ============================================================
    RESPONSIVE ANPASSUNGEN
    ============================================================ */
 
@@ -974,7 +1050,6 @@ body {
 
 /* Alle Ansichten: Mobil */
 @media (max-width: 640px) {
-  /* Swipe */
   .swipe-wrapper {
     height: 350px;
   }
@@ -999,12 +1074,10 @@ body {
     font-size: 11px;
   }
 
-  /* Header allgemein */
   .header-title {
     font-size: 22px;
   }
 
-  /* Flex-Header mobil */
   .header.flex-header {
     flex-direction: column;
     gap: 12px;
@@ -1021,7 +1094,6 @@ body {
     padding: 6px 12px;
   }
 
-  /* Grid-Container mobil */
   .container.grid-container {
     grid-template-columns: 1fr;
     padding: 16px;
@@ -1036,7 +1108,11 @@ body {
     grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   }
 
-  /* Voting mobil */
+  .pie-chart {
+    width: 180px;
+    height: 180px;
+  }
+
   .voting-panel {
     padding: 24px;
   }
@@ -1050,104 +1126,4 @@ body {
   .category-label {
     font-size: 14px;
   }
-}
-
-/* ============================================================
-   SWIPE-INDIKATOREN (Tinder-Stil)
-   ============================================================ */
-.sticky-note {
-  position: relative;
-  overflow: hidden; /* damit die Indikatoren nicht überstehen */
-}
-
-/* Indikator-Container (links und rechts) */
-.vote-indicator {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 5;
-}
-
-.indicator-left,
-.indicator-right {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 64px;
-  font-weight: 900;
-  opacity: 0;
-  transition: opacity 0.15s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(4px);
-}
-
-.indicator-left {
-  left: 20px;
-  color: #e74c3c;
-}
-.indicator-right {
-  right: 20px;
-  color: #27ae60;
-}
-
-/* Stempel-Text (optional) */
-.indicator-left::after,
-.indicator-right::after {
-  position: absolute;
-  bottom: -30px;
-  font-size: 16px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  white-space: nowrap;
-}
-.indicator-left::after {
-  content: "NOPE";
-}
-.indicator-right::after {
-  content: "LIKE";
-}
-
-/* Sichtbarkeit nach Schwellwert */
-.sticky-note.swiping-left .indicator-left,
-.sticky-note.swiping-right .indicator-right {
-  opacity: 1;
-}
-
-/* Hintergrundfarbe während des Wischens */
-.sticky-note.swiping-left {
-  background: linear-gradient(135deg, rgba(231, 76, 60, 0.25), rgba(192, 57, 43, 0.4));
-}
-.sticky-note.swiping-right {
-  background: linear-gradient(135deg, rgba(39, 174, 96, 0.25), rgba(30, 132, 73, 0.4));
-}
-
-/* Übergang zurücksetzen, wenn nicht gewischt wird */
-.sticky-note:not(.swiping-left):not(.swiping-right) .indicator-left,
-.sticky-note:not(.swiping-left):not(.swiping-right) .indicator-right {
-  opacity: 0;
-}
-
-/* ============================================================
-   SWIPE-PAGE: KEIN SCROLLEN (nur für die Wisch-Ansicht)
-   ============================================================ */
-body.swipe-page {
-  overflow: hidden;          /* verhindert vertikales & horizontales Scrollen */
-  position: fixed;           /* verhindert Bounce-Effekte (iOS) */
-  width: 100%;
-  height: 100%;
-}
-
-/* Die Sticky-Note selbst soll keine Browser-Standardgesten auslösen */
-.sticky-note {
-  touch-action: none;        /* unterdrückt Scrollen und Zoomen auf der Karte */
 }
